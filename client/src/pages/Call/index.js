@@ -6,7 +6,6 @@ import Controls from "../../components/Controls";
 import Videos from "../../components/Videos";
 import { useLocation, useNavigate } from "react-router-dom";
 import { VictoryPie } from "victory-pie";
-import * as tf from "@tensorflow/tfjs";
 
 const data = [
     { name: "Happy 😊", color: "#6AAB70", percentage: 100/7 },

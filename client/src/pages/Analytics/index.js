@@ -16,6 +16,22 @@ const data = [
     { name: "Surprise 😲" , color: "#FBBD4B", percentage: 100/7 }
 ];
 
+const mapEmotionToColor = {
+    "Happy": "#6AAB70",
+    "Sad": "#BBBC83",
+    "Angry": "#F26262",
+    "Disgust": "#B865F5",
+    "Fear": "#8D8DFB",
+    "Neutral": "#D280D2",
+    "Surprise": "#FBBD4B"
+};
+
+const lines = [
+    "Happy peaked at 9:15",
+    "Happy and Surprise were the most common emotions in the meet",
+    "There was a sudden change from Happy to Angry at 8:15"
+];
+
 const Analytics = () => {
     const navigate = useNavigate();
     const [display, setDisplay] = useState([data[0], data[1], data[2]]);
@@ -80,21 +96,41 @@ const Analytics = () => {
                 <div className="analytics__content__breakdown">
                     <div className="analytics__breakdown__details">
                         <div className="analytics__content__breakdown__title">Breakdown</div>
-                        <div className="analytics__content__breakdown__graph">
-                            <VictoryChart>
-                                {data.map(element => display.includes(element) && (
-                                    <VictoryLine
-                                        animate={{ duration: 100 }}
-                                        data={[
-                                            { x: 2, y: Math.round(Math.random() * 5) },
-                                            { x: 4, y: Math.round(Math.random() * 5) },
-                                            { x: 6, y: Math.round(Math.random() * 5) },
-                                            { x: 8, y: Math.round(Math.random() * 5) }
-                                        ]}
-                                        style={{ data: { stroke: element.color } }}
-                                    />
-                                ))}
-                            </VictoryChart>
+                        <div className="analytics__content__breakdown__content">
+                            <div className="analytics__content__breakdown__content__graph">
+                                <VictoryChart>
+                                    {data.map(element => display.includes(element) && (
+                                        <VictoryLine
+                                            animate={{ duration: 100 }}
+                                            data={[
+                                                { x: 2, y: Math.round(Math.random() * 5) },
+                                                { x: 4, y: Math.round(Math.random() * 5) },
+                                                { x: 6, y: Math.round(Math.random() * 5) },
+                                                { x: 8, y: Math.round(Math.random() * 5) }
+                                            ]}
+                                            style={{ data: { stroke: element.color } }}
+                                        />
+                                    ))}
+                                </VictoryChart>
+                            </div>
+                            <div className="analytics__content__breakdown__content__lines">
+                                <ul>
+                                    {lines.map(line => {
+                                        const element = line.split(" ").map(word => {
+                                            if (mapEmotionToColor[word]) {
+                                                return `<span style="color: ${mapEmotionToColor[word]}">${word}</span>`
+                                            }
+                                            return word;
+                                        }).join(" ");
+                                        return (
+                                            <li
+                                                dangerouslySetInnerHTML={{ __html: element }}
+                                                style={{ marginBottom: 25 }}
+                                            ></li>
+                                        );
+                                    })}
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
