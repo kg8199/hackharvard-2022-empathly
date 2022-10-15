@@ -1,11 +1,36 @@
 .call {
-    height: 100%;
+    height: 100vh;
+    background-color: #222222;
+    display: flex;
+    color: white;
 
-    &__buttons {
-        height: 5%;
-    }
+    &__content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        margin: 40px 48px;
 
-    &__videos {
-        height: 95%;
+        &__header {
+            height: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            &__profile {
+                display: flex;
+                align-items: center;
+
+                &__name {
+                    margin-left: 8px;
+                }
+            }
+        }
+
+        &__videos {
+            flex: 1;
+            margin: 0 100px;
+            display: flex;
+            flex-direction: column;
+        }
     }
 }

@@ -1,6 +1,12 @@
+import "./Controls.scss";
 import { useState } from "react";
 import { useClient } from "../../settings";
 import { useNavigate } from "react-router-dom";
+import MicIcon from '@mui/icons-material/Mic';
+import MicOffIcon from '@mui/icons-material/MicOff';
+import VideocamOutlinedIcon from '@mui/icons-material/VideocamOutlined';
+import VideocamOffOutlinedIcon from '@mui/icons-material/VideocamOffOutlined';
+import CallEndIcon from '@mui/icons-material/CallEnd';
 
 const Controls = ({ tracks, setStart }) => {
     const client = useClient();
@@ -28,13 +34,22 @@ const Controls = ({ tracks, setStart }) => {
 
     return (
         <div className="controls">
-            <button onClick={() => mute("audio")}>
+            <div className="controls__icon" onClick={() => mute("audio")}>
+                {trackState.audio ? <MicIcon /> : <MicOffIcon />}
+            </div>
+            <div className="controls__icon controls__center" onClick={() => mute("video")}>
+                {trackState.video ? <VideocamOutlinedIcon /> : <VideocamOffOutlinedIcon />}
+            </div>
+            <div className="controls__icon controls__right" onClick={() => leaveChannel()}>
+                <CallEndIcon fontSize="large" />
+            </div>
+            {/* <button onClick={() => mute("audio")}>
                 {trackState.audio ? "mute" : "unmute"}
             </button>
             <button onClick={() => mute("video")}>
                 {trackState.video ? "close video" : "open video"}
             </button>
-            <button onClick={() => leaveChannel()}>Leave</button>
+            <button onClick={() => leaveChannel()}>Leave</button> */}
         </div>
     );
 };

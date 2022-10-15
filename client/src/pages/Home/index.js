@@ -24,13 +24,19 @@ const Home = () => {
                     />
                     <button
                         onClick={() => {
-                            console.log(name)
                             if (name.length === 0) {
                                 setError(true);
                                 console.log("error set")
                             } else {
                                 setError(false);
-                                navigate("/call");
+                                navigate(
+                                    "/call",
+                                    {
+                                        state: {
+                                            username: name
+                                        }
+                                    }
+                                );
                             }
                         }}
                     >

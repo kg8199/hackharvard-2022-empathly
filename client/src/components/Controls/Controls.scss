@@ -1,0 +1,25 @@
+.controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &__icon {
+        cursor: pointer;
+        width: 50px;
+        height: 50px;
+        border-radius: 90px;
+        background-color: #3C4043;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    &__center {
+        margin: 0 12px;
+    }
+
+    &__right {
+        background-color: #EA4335;
+        width: 72px;
+    }
+}
