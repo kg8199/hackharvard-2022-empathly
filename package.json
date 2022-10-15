@@ -1,5 +1,0 @@
-{
-  "dependencies": {
-    "agora-rtc-react": "github:AgoraIO-Community/agora-rtc-react#v1.0.1"
-  }
-}
