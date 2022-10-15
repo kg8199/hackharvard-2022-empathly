@@ -1,0 +1,25 @@
+@import "../../styles/variables";
+
+.navbar {
+    height: 90px;
+    padding: 0 75px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &__brand {
+        font-size: 24px;
+
+        span {
+            color: $color-accent;
+        }
+    }
+
+    &__items {
+        display: flex;
+
+        &__item {
+            margin-left: 32px;
+        }
+    }
+}

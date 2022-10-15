@@ -1,3 +1,4 @@
+import "./App.scss";
 import { HashRouter, Routes, Route } from "react-router-dom";
 
 import About from "./pages/About";

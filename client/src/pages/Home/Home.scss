@@ -1,0 +1,59 @@
+@import "../../styles/variables";
+
+.home {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+
+    &__body {
+        flex: 1;
+        padding: 0 75px;
+        display: flex;
+
+        &__content {
+            flex: 1;
+            padding-right: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            &__title {
+                font-size: 64px;
+                margin-bottom: 24px;
+            }
+
+            &__description {
+                font-weight: normal;
+                margin-bottom: 24px;
+            }
+
+            input {
+                margin-bottom: 24px;
+            }
+
+            &__inputerror {
+                border-color: $color-error;
+
+                &::placeholder {
+                    color: $color-error;;
+                }
+            }
+
+            button {
+                align-self: flex-start;
+            }
+        }
+
+        &__image {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            img {
+                width: 543px;
+            }
+        }
+    }
+}
