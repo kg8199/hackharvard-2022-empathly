@@ -81,20 +81,18 @@
                         align-items: center;
                         justify-content: center;
                         font-size: 18px;
+                        width: 200px;
                     }
 
                     &__expand {
-                        display: flex;
-                        margin-bottom: 16px;
+                        background-color: #A2CAE0;
+                        margin-bottom: 12px;
+                    }
 
-                        button {
-                            background-color: #A2CAE0;
-                        }
-
-                        &__description {
-                            font-size: 16px;
-                            color: #A0A0A0;
-                        }
+                    &__description {
+                        font-size: 16px;
+                        color: #A0A0A0;
+                        margin-bottom: 12px;
                     }
 
                     &__leave {

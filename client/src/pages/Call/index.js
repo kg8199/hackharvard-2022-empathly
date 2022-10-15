@@ -6,6 +6,7 @@ import Controls from "../../components/Controls";
 import Videos from "../../components/Videos";
 import { useLocation, useNavigate } from "react-router-dom";
 import { VictoryPie } from "victory-pie";
+import * as tf from "@tensorflow/tfjs";
 
 const data = [
     { name: "Happy 😊", color: "#6AAB70", percentage: 100/7 },
@@ -138,10 +139,8 @@ const Call = () => {
                             </div>
                         </div>
                         <div className="call__overview__modal__content__submission">
-                            <div className="call__overview__modal__content__submission__expand">
-                                <button onClick={() => leaveChannel("/analytics")}>Expand</button>
-                                <div className="call__overview__modal__content__submission__expand__description">View the breakdown of your meeting in a detailed manner</div>
-                            </div>
+                            <div className="call__overview__modal__content__submission__description">View the breakdown of your meeting in a detailed manner</div>
+                            <button className="call__overview__modal__content__submission__expand" onClick={() => leaveChannel("/analytics")}>Expand</button>
                             <div className="call__overview__modal__content__submission__leave">
                                 <button onClick={() => leaveChannel("/")}>Leave</button>
                             </div>
