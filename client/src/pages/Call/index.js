@@ -8,15 +8,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { VictoryPie } from "victory-pie";
 import * as faceapi from "face-api.js";
 
-const data = [
-    { name: "Happy 😊", color: "#6AAB70", percentage: 100/7 },
-    { name: "Sad 😔", color: "#BBBC83", percentage: 100/7 },
-    { name: "Angry 😡", color: "#F26262", percentage: 100/7 },
-    { name: "Disgust 😖", color: "#B865F5", percentage: 100/7 },
-    { name: "Fear 😱", color: "#8D8DFB", percentage: 100/7 },
-    { name: "Neutral 😐", color: "#D280D2", percentage: 100/7 },
-    { name: "Surprise 😲" , color: "#FBBD4B", percentage: 100/7 }
-];
+const emotions = ["happy", "sad", "angry", "disgusted", "fearful", "neutral", "surprised"];
 
 const mapEmotionToEmoji = {
     "happy": "😊",
@@ -26,7 +18,20 @@ const mapEmotionToEmoji = {
     "fearful": "😱",
     "neutral": "😐",
     "surprised": "😲"
-}
+};
+
+const mapEmotionToColor = {
+    "happy": "#6AAB70",
+    "sad": "#BBBC83",
+    "angry": "#F26262",
+    "disgusted": "#B865F5",
+    "fearful": "#8D8DFB",
+    "neutral": "#D280D2",
+    "surprised": "#FBBD4B"
+};
+
+var lastRecord = 0;
+const data = [];
 
 const Call = () => {
     const [users, setUsers] = useState([]);
@@ -36,6 +41,7 @@ const Call = () => {
     const { username } = state;
     const navigate = useNavigate();
     const [showOverview, setShowOverview] = useState(false);
+    const [aggregates, setAggregates] = useState([]);
 
     const client = useClient();
     const { ready, tracks } = useMicrophoneAndCameraTracks();
@@ -46,7 +52,7 @@ const Call = () => {
         tracks[0].close();
         tracks[1].close();
         setStart(false);
-        navigate(path);
+        navigate(path, { state: { data } });
     };
 
     useEffect(() => {
@@ -57,13 +63,17 @@ const Call = () => {
     }, []);
 
     useEffect(() => {
-        const generateOutput = async (video) => {
+        const generateOutput = async (video, timestamp) => {
             const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
             if (detections.length) {
                 const expressions = detections[0].expressions;
                 const max = Object.keys(expressions).reduce((a, v) => Math.max(a, expressions[v]), -Infinity);
                 const result = Object.keys(expressions).filter(v => expressions[v] === max)[0];
-                video.parentElement.parentElement.previousSibling.innerHTML = `${result} ${result && result in mapEmotionToEmoji && mapEmotionToEmoji[result]}`
+                if (timestamp > lastRecord + 500) {
+                    data.push([timestamp, result]);
+                    lastRecord = timestamp;
+                }
+                video.parentElement.parentElement.previousSibling.innerHTML = `${result} ${result && result in mapEmotionToEmoji && mapEmotionToEmoji[result]}`;
             }
         };
 
@@ -74,11 +84,12 @@ const Call = () => {
             await faceapi.nets.faceExpressionNet.loadFromUri('/models');
             
             setInterval(() => {
+                const timestamp = Date.now();
                 const videos = document.getElementsByTagName("video");
 
                 for (let i = 0; i < videos.length; i++) {
                     const video = videos[i];
-                    generateOutput(video);
+                    generateOutput(video, timestamp);
                 }
             }, 100);
         };
@@ -162,8 +173,8 @@ const Call = () => {
                         <div className="call__overview__modal__content__graph">
                             <div className="call__overview__modal__content__graph__piechart">
                                 <VictoryPie
-                                    colorScale={data.map(element => element.color)}
-                                    data={data.map(element => element.percentage)}
+                                    colorScale={aggregates.map(element => element.color)}
+                                    data={aggregates.map(element => element.percentage)}
                                     style={{
                                         data: {
                                           stroke: "white", strokeWidth: 1
@@ -175,7 +186,7 @@ const Call = () => {
                                 />
                             </div>
                             <div className="call__overview__modal__content__graph__stats">
-                                {data.map(element => (
+                                {aggregates.map(element => (
                                     <div className="call__overview__modal__content__graph__stats__stat" key={element.name}>
                                         <div className="call__overview__modal__content__graph__stats__stat__color" style={{ backgroundColor: element.color }} />
                                         <div className="call__overview__modal__content__graph__stats__stat__name">{element.name}</div>
@@ -206,7 +217,27 @@ const Call = () => {
                 <div className="call__content__videos">
                     {!showOverview && ready && tracks && <Videos users={users} tracks={tracks} />}
                 </div>
-                <Controls tracks={tracks} onLeave={() => setShowOverview(true)} />
+                <Controls tracks={tracks} onLeave={() => {
+                    const counts = {};
+                    for (let i = 0; i < data.length; i++) {
+                        const emotion = data[i][1];
+                        if (!counts[emotion]) {
+                            counts[emotion] = 0;
+                        }
+                        counts[emotion] += 1;
+                    }
+                    const agg = [];
+                    for (let i = 0; i < emotions.length; i++) {
+                        const emotion = emotions[i];
+                        agg.push({
+                            name: `${emotion} ${mapEmotionToEmoji[emotion]}`,
+                            color: mapEmotionToColor[emotion],
+                            percentage: ((counts[emotion] | 0) / data.length) * 100
+                        });
+                    }
+                    setAggregates(agg);
+                    setShowOverview(true);
+                }} />
             </div>
         </div>
     );

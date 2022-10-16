@@ -3,38 +3,103 @@ import { Checkbox } from "@mui/material";
 import { VictoryPie } from "victory-pie";
 import { VictoryChart, VictoryLine } from "victory";
 import LogoutIcon from '@mui/icons-material/Logout';
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-const data = [
-    { name: "Happy 😊", color: "#6AAB70", percentage: 100/7 },
-    { name: "Sad 😔", color: "#BBBC83", percentage: 100/7 },
-    { name: "Angry 😡", color: "#F26262", percentage: 100/7 },
-    { name: "Disgust 😖", color: "#B865F5", percentage: 100/7 },
-    { name: "Fear 😱", color: "#8D8DFB", percentage: 100/7 },
-    { name: "Neutral 😐", color: "#D280D2", percentage: 100/7 },
-    { name: "Surprise 😲" , color: "#FBBD4B", percentage: 100/7 }
-];
+const emotions = ["happy", "sad", "angry", "disgusted", "fearful", "neutral", "surprised"];
 
-const mapEmotionToColor = {
-    "Happy": "#6AAB70",
-    "Sad": "#BBBC83",
-    "Angry": "#F26262",
-    "Disgust": "#B865F5",
-    "Fear": "#8D8DFB",
-    "Neutral": "#D280D2",
-    "Surprise": "#FBBD4B"
+const mapEmotionToEmoji = {
+    "happy": "😊",
+    "sad": "😔",
+    "angry": "😡",
+    "disgusted": "😖",
+    "fearful": "😱",
+    "neutral": "😐",
+    "surprised": "😲"
 };
 
-const lines = [
-    "Happy peaked at 9:15",
-    "Happy and Surprise were the most common emotions in the meet",
-    "There was a sudden change from Happy to Angry at 8:15"
-];
+const mapEmotionToColor = {
+    "happy": "#6AAB70",
+    "sad": "#BBBC83",
+    "angry": "#F26262",
+    "disgusted": "#B865F5",
+    "fearful": "#8D8DFB",
+    "neutral": "#D280D2",
+    "surprised": "#FBBD4B"
+};
 
 const Analytics = () => {
     const navigate = useNavigate();
-    const [display, setDisplay] = useState([data[0], data[1], data[2]]);
+    const { state: { data } } = useLocation();
+    const [display, setDisplay] = useState(["happy" + " " + mapEmotionToEmoji["happy"], "sad" + " " + mapEmotionToEmoji["sad"], "angry" + " " + mapEmotionToEmoji["angry"]]);
+
+    const counts = {};
+    for (let i = 0; i < data.length; i++) {
+        const emotion = data[i][1];
+        if (!counts[emotion]) {
+            counts[emotion] = 0;
+        }
+        counts[emotion] += 1;
+    }
+    let max = -1;
+    let maxNum = null;
+    let min = data.length;
+    let minNum = null;
+    for (let k in counts) {
+        if (counts[k] > max) {
+            max = counts[k]
+            maxNum = k;
+        }
+        if (counts[k] < min) {
+            min = counts[k];
+            minNum = k;
+        }
+    }
+
+    const lines = [
+        `${maxNum} was the most common emotion in the meeting`,
+        `${minNum} was the least common emotion during the meeting`
+    ];
+
+    const agg = [];
+    for (let i = 0; i < emotions.length; i++) {
+        const emotion = emotions[i];
+        agg.push({
+            name: `${emotion} ${mapEmotionToEmoji[emotion]}`,
+            color: mapEmotionToColor[emotion],
+            percentage: ((counts[emotion] | 0) / data.length) * 100
+        });
+    }
+
+    let dict = {};
+    for (let i = 0; i < data.length; i++) {
+        const [timestamp, emotion] = data[i];
+        if (!dict[emotion]) {
+            dict[emotion] = [];
+        }
+        dict[emotion].push(timestamp);
+    }
+
+    for (let k in dict) {
+        let d = {};
+        for (let i = 0; i < dict[k].length; i++) {
+            if (!d[dict[k][i]]) {
+                d[dict[k][i]] = 0;
+            }
+            d[dict[k][i]] += 1;
+        }
+        dict[k] = d;
+    }
+
+    let final = {};
+
+    for (let k in dict) {
+        const arr = [];
+        for (let j in dict[k]) {
+            arr.push({ x: j, y: dict[k][j] });
+        }
+        final[k] = arr;
+    }
 
     return (
         <div className="analytics">
@@ -52,7 +117,7 @@ const Analytics = () => {
                                 <th>Select Data</th>
                             </tr>
                             <div style={{ height: 10 }} />
-                            {data.map(element => (
+                            {agg.map(element => (
                                 <tr>
                                     <td style={{ height: "100%", display: "flex", alignItems: "center", fontWeight: 400, paddingTop: 10, flex: 1 }}>
                                         <div style={{ backgroundColor: element.color, height: 10, width: 10, borderRadius: 25, marginRight: 15 }} />
@@ -62,12 +127,12 @@ const Analytics = () => {
                                     <td>
                                         <Checkbox
                                             disableRipple
-                                            checked={display.includes(element)}
+                                            checked={display.includes(element.name)}
                                             onChange={event => {
                                                 if (event.target.checked) {
-                                                    setDisplay(prev => [...prev, element]);
+                                                    setDisplay(prev => [...prev, element.name]);
                                                 } else {
-                                                    setDisplay(prev => prev.filter(ele => ele !== element))
+                                                    setDisplay(prev => prev.filter(ele => ele !== element.name))
                                                 }
                                             }}
                                         />
@@ -78,8 +143,8 @@ const Analytics = () => {
                         <div className="analytics__content__details__content__graph">
                             <div className="analytics__content__details__content__graph__pie">
                                 <VictoryPie
-                                    colorScale={data.map(element => element.color)}
-                                    data={data.map(element => element.percentage)}
+                                    colorScale={agg.map(element => element.color)}
+                                    data={agg.map(element => element.percentage)}
                                     style={{
                                         data: {
                                             stroke: "white", strokeWidth: 1
@@ -99,15 +164,9 @@ const Analytics = () => {
                         <div className="analytics__content__breakdown__content">
                             <div className="analytics__content__breakdown__content__graph">
                                 <VictoryChart>
-                                    {data.map(element => display.includes(element) && (
-                                        <VictoryLine
+                                    {agg.map(element => display.includes(element.name) && final[element.name.substring(0, element.name.length - 3)] && (<VictoryLine
                                             animate={{ duration: 100 }}
-                                            data={[
-                                                { x: 2, y: Math.round(Math.random() * 5) },
-                                                { x: 4, y: Math.round(Math.random() * 5) },
-                                                { x: 6, y: Math.round(Math.random() * 5) },
-                                                { x: 8, y: Math.round(Math.random() * 5) }
-                                            ]}
+                                            data={final[element.name.substring(0, element.name.length - 3)].map(({ x, y }) => ({ x: (x / 100000000000), y }))}
                                             style={{ data: { stroke: element.color } }}
                                         />
                                     ))}
