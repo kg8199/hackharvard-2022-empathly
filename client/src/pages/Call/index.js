@@ -6,6 +6,7 @@ import Controls from "../../components/Controls";
 import Videos from "../../components/Videos";
 import { useLocation, useNavigate } from "react-router-dom";
 import { VictoryPie } from "victory-pie";
+import * as faceapi from "face-api.js";
 
 const data = [
     { name: "Happy 😊", color: "#6AAB70", percentage: 100/7 },
@@ -16,6 +17,16 @@ const data = [
     { name: "Neutral 😐", color: "#D280D2", percentage: 100/7 },
     { name: "Surprise 😲" , color: "#FBBD4B", percentage: 100/7 }
 ];
+
+const mapEmotionToEmoji = {
+    "happy": "😊",
+    "sad": "😔",
+    "angry": "😡",
+    "disgusted": "😖",
+    "fearful": "😱",
+    "neutral": "😐",
+    "surprised": "😲"
+}
 
 const Call = () => {
     const [users, setUsers] = useState([]);
@@ -37,6 +48,43 @@ const Call = () => {
         setStart(false);
         navigate(path);
     };
+
+    useEffect(() => {
+        const script = document.createElement("script");
+        script.setAttribute("type", "text/javascript");
+        document.head.appendChild(script);
+        return () => script.parentNode.removeChild(script);      
+    }, []);
+
+    useEffect(() => {
+        const generateOutput = async (video) => {
+            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
+            if (detections.length) {
+                const expressions = detections[0].expressions;
+                const max = Object.keys(expressions).reduce((a, v) => Math.max(a, expressions[v]), -Infinity);
+                const result = Object.keys(expressions).filter(v => expressions[v] === max)[0];
+                video.parentElement.parentElement.previousSibling.innerHTML = `${result} ${result && result in mapEmotionToEmoji && mapEmotionToEmoji[result]}`
+            }
+        };
+
+        const detect = async () => {
+            await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+            await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+            await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+            await faceapi.nets.faceExpressionNet.loadFromUri('/models');
+            
+            setInterval(() => {
+                const videos = document.getElementsByTagName("video");
+
+                for (let i = 0; i < videos.length; i++) {
+                    const video = videos[i];
+                    generateOutput(video);
+                }
+            }, 100);
+        };
+
+        detect();
+    }, []);
 
     useEffect(() => {
         const intervalId = setInterval(() => {

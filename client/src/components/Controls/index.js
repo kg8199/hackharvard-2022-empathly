@@ -21,10 +21,10 @@ const Controls = ({ tracks, onLeave }) => {
 
     return (
         <div className="controls">
-            <div className="controls__icon" onClick={() => mute("audio")}>
+            <div className="controls__icon" style={{ backgroundColor: trackState.audio ? "#3C4043" : "#EA4335" }} onClick={() => mute("audio")}>
                 {trackState.audio ? <MicIcon /> : <MicOffIcon />}
             </div>
-            <div className="controls__icon controls__center" onClick={() => mute("video")}>
+            <div className="controls__icon controls__center" style={{ backgroundColor: trackState.video ? "#3C4043" : "#EA4335" }} onClick={() => mute("video")}>
                 {trackState.video ? <VideocamOutlinedIcon /> : <VideocamOffOutlinedIcon />}
             </div>
             <div className="controls__icon controls__right" onClick={() => onLeave()}>
