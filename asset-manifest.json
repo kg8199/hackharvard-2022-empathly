@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/hackharvard-2022-empathly/client/static/css/main.fcc3d62c.css",
+    "main.js": "/hackharvard-2022-empathly/client/static/js/main.fc26e81b.js",
+    "static/media/landing.png": "/hackharvard-2022-empathly/client/static/media/landing.9db6a614863991c29621.png",
+    "index.html": "/hackharvard-2022-empathly/client/index.html",
+    "main.fcc3d62c.css.map": "/hackharvard-2022-empathly/client/static/css/main.fcc3d62c.css.map",
+    "main.fc26e81b.js.map": "/hackharvard-2022-empathly/client/static/js/main.fc26e81b.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.fcc3d62c.css",
+    "static/js/main.fc26e81b.js"
+  ]
+}
