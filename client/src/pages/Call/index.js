@@ -7,6 +7,7 @@ import Videos from "../../components/Videos";
 import { useLocation, useNavigate } from "react-router-dom";
 import { VictoryPie } from "victory-pie";
 import * as faceapi from "face-api.js";
+import { Switch } from "@mui/material";
 
 const emotions = ["happy", "sad", "angry", "disgusted", "fearful", "neutral", "surprised"];
 
@@ -42,6 +43,7 @@ const Call = () => {
     const navigate = useNavigate();
     const [showOverview, setShowOverview] = useState(false);
     const [aggregates, setAggregates] = useState([]);
+    const [accessible, setAccessible] = useState(false);
 
     const client = useClient();
     const { ready, tracks } = useMicrophoneAndCameraTracks();
@@ -54,6 +56,36 @@ const Call = () => {
         setStart(false);
         navigate(path, { state: { data } });
     };
+
+    useEffect(() => {
+        document.addEventListener("keypress", e => {
+            if (e.keyCode === 115) {
+                let count = {};
+                for (let i = 0; i < 4; i++) {
+                    const emotion = data[data.length-1-i][1];
+                    if (!count[emotion]) {
+                        count[emotion] = 0;
+                    }
+                }
+
+                console.log(count)
+
+                let res = "";
+                let max = -1;
+
+                for (let k in count) {
+                    if (count[k] > max) {
+                        res = k;
+                        max = count[k]
+                    }
+                }
+
+                var msg = new SpeechSynthesisUtterance();
+                msg.text = "The overall feeling in the room is " + res;
+                window.speechSynthesis.speak(msg);
+            }
+        })
+    }, []);
 
     useEffect(() => {
         const script = document.createElement("script");
@@ -69,6 +101,12 @@ const Call = () => {
                 const expressions = detections[0].expressions;
                 const max = Object.keys(expressions).reduce((a, v) => Math.max(a, expressions[v]), -Infinity);
                 const result = Object.keys(expressions).filter(v => expressions[v] === max)[0];
+                let canvas = video.parentElement.parentElement.previousSibling.previousSibling;
+                if (accessible) {
+                    canvas.style.backgroundColor = mapEmotionToColor[result];
+                } else {
+                    canvas.style.backgroundColor = "transparent";
+                }
                 if (timestamp > lastRecord + 500) {
                     data.push([timestamp, result]);
                     lastRecord = timestamp;
@@ -77,13 +115,15 @@ const Call = () => {
             }
         };
 
+        let intervalId;
+
         const detect = async () => {
             await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
             await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
             await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
             await faceapi.nets.faceExpressionNet.loadFromUri('/models');
             
-            setInterval(() => {
+            intervalId = setInterval(() => {
                 const timestamp = Date.now();
                 const videos = document.getElementsByTagName("video");
 
@@ -95,7 +135,11 @@ const Call = () => {
         };
 
         detect();
-    }, []);
+
+        return () => {
+            clearInterval(intervalId)
+        };
+    }, [accessible]);
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -208,7 +252,13 @@ const Call = () => {
             </div>)}
             <div className="call__content">
                 <div className="call__content__header">
-                    <div className="call__content__header__time">{time}</div>
+                    <div className="call__content__header__time">
+                        {time}
+                        <div className="call__content__header__time__switch">
+                            <div className="call__content__header__time__switch__label">Accessible Mode</div>
+                            <Switch checked={accessible} onChange={event => setAccessible(event.target.checked)} />
+                        </div>
+                    </div>
                     <div className="call__content__header__profile">
                         <AccountCircleIcon fontSize="large" />
                         <div className="call__content__header__profile__name">{username}</div>

@@ -18,6 +18,10 @@
                 height: 100%;
                 position: absolute;
                 z-index: 10;
+                flex: 1;
+                display: flex;
+                margin: 12px;
+                border-radius: 15px;
             }
 
             &__name {

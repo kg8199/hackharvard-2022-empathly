@@ -28,7 +28,7 @@ const Video = ({ users, tracks }) => {
                     {elements.map(user => (
                         user.videoTrack && <div className="videos__row__wrapper">
                             <div className="videos__row__wrapper__name">{user.uid}</div>
-                            <canvas className="videos__row__wrapper__canvas" />
+                            <canvas style={{ opacity: 0.5 }} className="videos__row__wrapper__canvas" />
                             <div className="videos__row__wrapper__label" />
                             <AgoraVideoPlayer
                                 videoTrack={user.videoTrack}

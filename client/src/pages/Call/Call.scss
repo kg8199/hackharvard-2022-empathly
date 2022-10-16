@@ -119,6 +119,17 @@
             justify-content: space-between;
             align-items: center;
 
+            &__time {
+                display: flex;
+                align-items: center;
+
+                &__switch {
+                    margin-left: 40px;
+                    display: flex;
+                    align-items: center;
+                }
+            }
+
             &__profile {
                 display: flex;
                 align-items: center;
