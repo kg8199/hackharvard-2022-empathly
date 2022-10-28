@@ -17,7 +17,11 @@ const getTranscript = async () => {
     // Sends the audio file to AssemblyAI for transcription
     const response = await assembly.post("/transcript", {
         audio_url: audioURL,
+        sentiment_analysis: true,
+        entity_detection:true,
+        iab_categories: true,
     })
+
     
     // Interval for checking transcript completion
     const checkCompletionInterval = setInterval(async () => {
@@ -30,9 +34,26 @@ const getTranscript = async () => {
         console.log("\nTranscription completed!\n")
         let transcriptText = transcript.data.text
         console.log(`Your transcribed text:\n\n${transcriptText}`)
+        let trascriptSentiment = transcript.data.sentiment_analysis_results
+        console.log(trascriptSentiment)
         clearInterval(checkCompletionInterval)
         }
     }, refreshInterval)
     }
     
 getTranscript()
+
+// const axios = require("axios");
+  
+// const assembly = axios.create({
+//     baseURL: "https://api.assemblyai.com/v2",
+//     headers: {
+//         authorization: process.env.ASSEMBLYAI_API_KEY,
+//         "content-type": "application/json",
+//     },
+// });
+// assembly
+//     .post("/transcript", {
+//         audio_url: "https://bit.ly/3yxKEIY",
+//         sentiment_analysis: true
+//     }).then((res) => console.log(res.data)).catch((err) => console.error(err));
