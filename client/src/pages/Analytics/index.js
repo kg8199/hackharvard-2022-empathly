@@ -1,7 +1,7 @@
 import "./Analytics.scss";
 import { Checkbox } from "@mui/material";
 import { VictoryPie } from "victory-pie";
-import { VictoryChart, VictoryLine } from "victory";
+import { VictoryChart, VictoryLine, VictoryAxis, VictoryLabel } from "victory";
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -69,7 +69,7 @@ const Analytics = () => {
             color: mapEmotionToColor[emotion],
             percentage: ((counts[emotion] | 0) / data.length) * 100
         });
-    }
+    };
 
     let dict = {};
     for (let i = 0; i < data.length; i++) {
@@ -79,6 +79,8 @@ const Analytics = () => {
         }
         dict[emotion].push(timestamp);
     }
+    
+    let dict2 = {}
 
     for (let k in dict) {
         let d = {};
@@ -88,18 +90,18 @@ const Analytics = () => {
             }
             d[dict[k][i]] += 1;
         }
-        dict[k] = d;
+        dict2[k] = d;
     }
 
     let final = {};
 
-    for (let k in dict) {
+    for (let k in dict2) {
         const arr = [];
-        for (let j in dict[k]) {
-            arr.push({ x: j, y: dict[k][j] });
+        for (let j in dict2[k]) {
+            arr.push({ x: j, y: dict2[k][j] });
         }
         final[k] = arr;
-    }
+    } 
 
     return (
         <div className="analytics">
@@ -163,13 +165,38 @@ const Analytics = () => {
                         <div className="analytics__content__breakdown__title">Breakdown</div>
                         <div className="analytics__content__breakdown__content">
                             <div className="analytics__content__breakdown__content__graph">
-                                <VictoryChart>
-                                    {agg.map(element => display.includes(element.name) && final[element.name.substring(0, element.name.length - 3)] && (<VictoryLine
-                                            animate={{ duration: 100 }}
-                                            data={final[element.name.substring(0, element.name.length - 3)].map(({ x, y }) => ({ x: (x / 100000000000), y }))}
-                                            style={{ data: { stroke: element.color } }}
-                                        />
-                                    ))}
+                                <VictoryChart domain={{ y: [0,4] }}>
+                                    <VictoryAxis dependentAxis />
+                                    <VictoryAxis
+                                    tickLabelComponent={<VictoryLabel angle={-45} />}
+                                    style={{
+                                        tickLabels: { fontSize: 12 }
+                                    }}
+                                    />
+                                    {Object.keys(final).map(element => {
+                                        return (
+                                            display.map(dis => dis.substring(0, dis.length - 3)).includes(element) && (
+                                            <VictoryLine
+                                                animate={{ duration: 300 }}
+                                                samples={2}
+                                                range={{ x: [0,5] }}
+                                                minDomain={{ y: 0 }}
+                                                maxDomain={{ y: 4 }}
+                                                scale={{ x:"time" }}
+                                                data={final[element].map(({ x, y }) => {
+                                                    let h = new Date(Number(x)).getHours()
+                                                    let m = new Date(Number(x)).getMinutes();
+                                                    let s = new Date(Number(x)).getSeconds();
+
+                                                    h = (h<10) ? '0' + h : h;
+                                                    m = (m<10) ? '0' + m : m;
+                                                    s = (s<10) ? '0' + s : s;
+                                                    return ({ x: h + ":" + m + ":" + s, y })
+                                                }).sort((a,b) => a.x > b.x ? 1 : -1)}
+                                                style={{ data: { stroke: mapEmotionToColor[element] } }}
+                                            />
+                                        ));
+                                    })}
                                 </VictoryChart>
                             </div>
                             <div className="analytics__content__breakdown__content__lines">

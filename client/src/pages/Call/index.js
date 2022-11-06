@@ -59,7 +59,7 @@ const Call = () => {
 
     useEffect(() => {
         document.addEventListener("keypress", e => {
-            if (e.keyCode === 115) {
+            if (e.key === "s") {
                 let count = {};
                 for (let i = 0; i < 4; i++) {
                     const emotion = data[data.length-1-i][1];
@@ -67,8 +67,6 @@ const Call = () => {
                         count[emotion] = 0;
                     }
                 }
-
-                console.log(count)
 
                 let res = "";
                 let max = -1;
@@ -83,6 +81,26 @@ const Call = () => {
                 var msg = new SpeechSynthesisUtterance();
                 msg.text = "The overall feeling in the room is " + res;
                 window.speechSynthesis.speak(msg);
+            } else if ((e.key === "1" || e.key === "2" || e.key === "3" || e.key === "4")) {
+                const videos = document.getElementsByTagName("video");
+                const index = Number(e.key) - 1;
+                
+                if (index < videos.length) {
+                    for (let i = 0; i < videos.length; i++) {
+                        videos[i].parentNode.classList.remove("selected");
+                    }
+
+                    const video = videos[index];
+                    video.parentNode.classList.add("selected");
+
+                    const name = video.parentNode.parentNode.parentNode.firstChild.innerHTML;
+                    let emotion = video.parentNode.parentNode.parentNode.children.item(2).innerHTML;
+                    emotion = emotion.substring(0, emotion.length - 2);
+
+                    var msg = new SpeechSynthesisUtterance();
+                    msg.text = name + (index === 0 ? " are" : " is") + " feeling " + emotion;
+                    window.speechSynthesis.speak(msg);
+                }
             }
         })
     }, []);
@@ -96,22 +114,24 @@ const Call = () => {
 
     useEffect(() => {
         const generateOutput = async (video, timestamp) => {
-            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
-            if (detections.length) {
-                const expressions = detections[0].expressions;
-                const max = Object.keys(expressions).reduce((a, v) => Math.max(a, expressions[v]), -Infinity);
-                const result = Object.keys(expressions).filter(v => expressions[v] === max)[0];
-                let canvas = video.parentElement.parentElement.previousSibling.previousSibling;
-                if (accessible) {
-                    canvas.style.backgroundColor = mapEmotionToColor[result];
-                } else {
-                    canvas.style.backgroundColor = "transparent";
-                }
-                if (timestamp > lastRecord + 500) {
+            try {
+                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
+                if (detections.length) {
+                    const expressions = detections[0].expressions;
+                    const max = Object.keys(expressions).reduce((a, v) => Math.max(a, expressions[v]), -Infinity);
+                    const result = Object.keys(expressions).filter(v => expressions[v] === max)[0];
+                    let canvas = video.parentElement.parentElement.previousSibling.previousSibling;
+                    if (accessible) {
+                        canvas.style.backgroundColor = mapEmotionToColor[result];
+                    } else {
+                        canvas.style.backgroundColor = "transparent";
+                    }
                     data.push([timestamp, result]);
                     lastRecord = timestamp;
+                    video.parentElement.parentElement.previousSibling.innerHTML = `${result} ${result && result in mapEmotionToEmoji && mapEmotionToEmoji[result]}`;
                 }
-                video.parentElement.parentElement.previousSibling.innerHTML = `${result} ${result && result in mapEmotionToEmoji && mapEmotionToEmoji[result]}`;
+            } catch (e) {
+                console.log("detection not wokring")
             }
         };
 
@@ -170,6 +190,7 @@ const Call = () => {
 
                 if (mediaType === "audio") {
                     user.audioTrack.play();
+                    console.log(user.audioTrack.play)
                 }
             });
 
